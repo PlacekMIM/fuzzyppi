@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Fuzzy PPI score</title>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'fuzzy_score/style.css' %}">
+  </head>
+  <body>
+    <h1>FuzzyPPI: Human Proteome at Fuzzy Semantic Space</h1>
+    <form action="{% url 'fuzzy_score:index' %}" method="get">
+        <p>Provide two UniProt protein codes (e.g. Q6IQ22 and Q96C45) to check their fuzzy semantic score of binding affinity.</p>
+      <label for="protein1">Protein 1: </label>
+      <input id="protein1" type="text" name="protein1" value="{{ prot1 }}"  maxlength="6" minlength="6" required="True"><br>
+      <label for="protein2">Protein 2: </label>
+      <input id="protein2" type="text" name="protein2" value="{{ prot2 }}" maxlength="6" minlength="6" required="True"><br>
+      <input type="submit" value="Check score">
+    </form>
+    <br>
+    You can also download our dataset from the following <a href="https://doi.org/10.6084/m9.figshare.15439980">link</a>.
+
+  {% if ppi_score_value %}
+      <p class="{{ style }}">The fuzzy core for {{ prot1 }} and {{ prot2 }} is {{ ppi_score_value }}. This score should be interpreted as: {{ interpretation }}.</p>
+
+      <div class="wrap-collabsible">
+          <input id="collapsible" class="toggle" type="checkbox">
+          <label for="collapsible" class="lbl-toggle">Click for more information on how to interpret the result</label>
+          <div class="collapsible-content">
+              <div class="content-inner">
+                  <br>
+                  The performance evaluation for this fuzzy score level (for score in range &lt;{{ range.0.0 }}, {{ range.0.1 }}&gt;) is as follows:
+                  <ul>
+                      <li>{{ gold_FPR.1 }}: {{ gold_FPR.0 }}</li>
+                      <li>{{ gold_FNR.1 }}: {{ gold_FNR.0 }}</li>
+                      <li>{{ gold_precision.1 }}: {{ gold_precision.0 }}</li>
+                      <li>{{ gold_recall.1 }}: {{ gold_recall.0 }}</li>
+                      <li>{{ gold_auc.1 }}: {{ gold_auc.0 }}</li>
+
+                      <li>{{ all_FPR.1 }}: {{ all_FPR.0 }}</li>
+                      <li>{{ all_FNR.1 }}: {{ all_FNR.0 }}</li>
+                      <li>{{ all_precision.1 }}: {{ all_precision.0 }}</li>
+                      <li>{{ all_recall.1 }}: {{ all_recall.0 }}</li>
+                      <li>{{ all_auc.1 }}: {{ all_auc.0 }}</li>
+                  </p>
+                  </ul>
+
+                  <br>
+                    <table border>
+                    <tr>
+                        <th rowspan="2">Binding affinity</th>
+                        <th colspan="2">FuzzyPPI</th>
+                        <th colspan="5">Gold-PPI</th>
+                        <th colspan="5">All-PPI</th>
+                    </tr>
+                    <tr>
+                      <th>Positive</th>
+                      <th>Negative</th>
+                      <th>FPR</th>
+                      <th>FNR</th>
+                      <th>Precision</th>
+                      <th>Recall</th>
+                      <th>AUC</th>
+                      <th>FPR</th>
+                      <th>FNR</th>
+                      <th>Precision</th>
+                      <th>Recall</th>
+                      <th>AUC</th>
+                    </tr>
+                    {% for r in tab %}
+                        {% if forloop.counter == i %}
+                            <tr style="font-weight: bold; background-color: {{ r.13 }}">
+                        {% else %}
+                            <tr style="background-color: {{ r.13 }}">
+                        {% endif %}
+                      <td> {{ r.0 }}</td>
+                      <td> {{ r.1 }}</td>
+                      <td> {{ r.2 }}</td>
+                      <td> {{ r.3 }}</td>
+                      <td> {{ r.4 }}</td>
+                      <td> {{ r.5 }}</td>
+                      <td> {{ r.6 }}</td>
+                      <td> {{ r.7 }}</td>
+                      <td> {{ r.8 }}</td>
+                      <td> {{ r.9 }}</td>
+                      <td> {{ r.10 }}</td>
+                      <td> {{ r.11 }}</td>
+                      <td> {{ r.12 }}</td>
+                    </tr>
+                    {% endfor %}
+                    </table>
+              </div>
+          </div>
+      </div>
+{% elif not prot1 and not prot2 %}
+    <p></p>
+{% elif not prot1 or not prot2 %}
+    <p class="isa_error">Please provide both proteins.</p>
+{% elif ppi_score_value is None %}
+    <p class="isa_error">No score for pair: "{{ prot1 }}" and "{{ prot2 }}".</p>
+{% endif %}
+  </body>
+</html>
+
